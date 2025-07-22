@@ -104,13 +104,13 @@ const GenderList = () => {
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-center"
+                  className="px-5 py-3 font-medium text-start"
                 >
                   Gender
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-center"
+                  className="px-5 py-3 font-medium text-start"
                 >
                   Action
                 </TableCell>
