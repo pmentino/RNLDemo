@@ -17,15 +17,10 @@ export const useToastMessage = (
     setIsVisible(false);
   }, []);
 
-  const toggleToastMessage = useCallback(() => {
-    setIsVisible((prev) => !prev);
-  }, []);
-
   return {
     message,
     isVisible,
     showToastMessage,
     closeToastMessage,
-    toggleToastMessage,
   };
 };
