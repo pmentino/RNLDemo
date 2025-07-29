@@ -5,7 +5,7 @@ const GenderService = {
     try {
       const response = await AxiosInstance.get("/gender/loadGenders");
       return response;
-    } catch (error) {
+    } catch (error) { 
       throw error;
     }
   },
