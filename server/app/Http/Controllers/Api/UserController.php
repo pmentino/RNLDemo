@@ -40,7 +40,7 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'suffix_name' => $validated['suffix_name'],
             'gender_id' => $validated['gender'],
-            'birt_date' => $validated['birth_date'],
+            'birth_date' => $validated['birth_date'],
             'age' => $age,
             'username' => $validated['username'],
             'password' => $validated['password']
@@ -71,7 +71,7 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'suffix_name' => $validated['suffix_name'],
             'gender_id' => $validated['gender'],
-            'birt_date' => $validated['birth_date'],
+            'birth_date' => $validated['birth_date'],
             'age' => $age,
             'username' => $validated['username']
         ]);
@@ -79,6 +79,16 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User Successfully Updated.',
             'user' => $user
+        ], 200);
+    }
+
+    public function destroyUser(User $user) {
+        $user->update([
+            'is_deleted' => true
+        ]);
+
+        return response()->json([
+            'message' => 'User Successfully Deleted.'
         ], 200);
     }
 }
