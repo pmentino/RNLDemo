@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/Table";
-import type { GenderColumns } from "../../../interfaces/GenderColumns";
+import type { GenderColumns } from "../../../interfaces/GenderInterface";
 import GenderService from "../../../services/GenderService";
 import Spinner from "../../../components/Spinner/Spinner";
 import { Link } from "react-router-dom";
