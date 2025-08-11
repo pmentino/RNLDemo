@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import AppLayout from "../layout/AppLayout";
 import GenderMainPage from "../pages/Gender/GenderMainPage";
-import EditGenderForm from "../pages/Gender/components/EditGenderForm";
+import EditGenderForm from "../pages/Gender/components/EditGenderForm"
 import DeleteGenderPage from "../pages/Gender/components/DeleteGenderForm";
 import UserMainPage from "../pages/User/UserMainPage";
 import LoginPage from "../pages/Auth/LoginPage";

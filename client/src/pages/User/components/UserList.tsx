@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useCallback, useEffect, useRef, useState, type FC } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
 import UserService from "../../../services/UserService";
 import Spinner from "../../../components/Spinner/Spinner";
 import type { UserColumns } from "../../../interfaces/UserInterface";
+import { data } from "react-router-dom";
 
 interface UserListProps {
   onAddUser: () => void;
@@ -25,20 +26,33 @@ const UserList: FC<UserListProps> = ({
 }) => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [users, setUsers] = useState<UserColumns[]>([]);
+  const [usersTableCurrentPage, setUsersTableCurrentPage] = useState(1);
+  const [usersTableLastPage, setUsersTableLastPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const handleLoadUsers = async () => {
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const handleLoadUsers = async (page: number, append = false) => {
     try {
       setLoadingUsers(true);
 
-      const res = await UserService.loadUsers();
+      const res = await UserService.loadUsers(page);
 
       if (res.status === 200) {
-        setUsers(res.data.users);
+        const usersData = res.data.users.data || res.data.users || [];
+        const lastPage =
+          res.data.users.last_page ||
+          res.data.last_page ||
+          setUsersTableLastPage ||
+          1;
+
+        setUsers(append ? [...users, ...usersData] : usersData);
+        setUsersTableCurrentPage(page);
+        setUsersTableLastPage(lastPage);
+        setHasMore(page < lastPage);
       } else {
-        console.error(
-          "Unexpected status error occurred during loading users: ",
-          res.status
-        );
+        setUsers(append ? users : []);
+        setHasMore(false);
       }
     } catch (error) {
       console.error(
@@ -49,6 +63,19 @@ const UserList: FC<UserListProps> = ({
       setLoadingUsers(false);
     }
   };
+
+  const handleScroll = useCallback(() => {
+    const ref = tableRef.current;
+
+    if (
+      ref &&
+      ref.scrollTop + ref.clientHeight >= ref.scrollHeight - 10 &&
+      hasMore &&
+      !loadingUsers
+    ) {
+      handleLoadUsers(usersTableCurrentPage + 1, true);
+    }
+  }, [hasMore, loadingUsers, usersTableCurrentPage]);
 
   const handleUserFullNameFormat = (user: UserColumns) => {
     let fullName = "";
@@ -73,13 +100,30 @@ const UserList: FC<UserListProps> = ({
   };
 
   useEffect(() => {
-    handleLoadUsers();
+    const ref = tableRef.current;
+
+    if (ref) {
+      ref.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (ref) {
+        ref.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    handleLoadUsers(usersTableCurrentPage, false);
   }, [refreshKey]);
 
   return (
     <>
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <div className="max-w-full max-h-[calc(100vh)] overflow-x-auto">
+        <div
+          ref={tableRef}
+          className="relative max-w-full max-h-[calc(100vh-8.5rem)] overflow-x-auto"
+        >
           <Table>
             <caption className="mb-4">
               <div className="border-b border-gray-100">
@@ -135,13 +179,7 @@ const UserList: FC<UserListProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
-              {loadingUsers ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-3 text-center">
-                    <Spinner size="md" />
-                  </TableCell>
-                </TableRow>
-              ) : (
+              {users.length ?? 0 > 0 ? (
                 users.map((user, index) => (
                   <TableRow className="hover:bg-gray-100" key={index}>
                     <TableCell className="px-4 py-3 text-center">
@@ -179,6 +217,19 @@ const UserList: FC<UserListProps> = ({
                     </TableCell>
                   </TableRow>
                 ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="px-4 py-3 text-center">
+                    <Spinner size="md" />
+                  </TableCell>
+                </TableRow>
+              )}
+              {loadingUsers && (users.length ?? 0) > 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="px-4 py-3 text-center">
+                    <Spinner size="md" />
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

@@ -29,18 +29,18 @@ const UserMainPage = () => {
   } = useModal(false);
 
   const {
-    message: toastMesssage,
+    message: toastMessage,
     isVisible: toastMessageIsVisible,
     showToastMessage,
     closeToastMessage,
-  } = useToastMessage("", false, false);
+  } = useToastMessage("", false);
 
   const { refresh, handleRefresh } = useRefresh(false);
 
   return (
     <>
       <ToastMessage
-        message={toastMesssage}
+        message={toastMessage}
         isVisible={toastMessageIsVisible}
         onClose={closeToastMessage}
       />
