@@ -9,7 +9,7 @@ import {
 import UserService from "../../../services/UserService";
 import Spinner from "../../../components/Spinner/Spinner";
 import type { UserColumns } from "../../../interfaces/UserInterface";
-import { data } from "react-router-dom";
+import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 
 interface UserListProps {
   onAddUser: () => void;
@@ -30,20 +30,27 @@ const UserList: FC<UserListProps> = ({
   const [usersTableLastPage, setUsersTableLastPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadUsers = async (page: number, append = false) => {
+  const handleLoadUsers = async (
+    page: number,
+    append = false,
+    search: string
+  ) => {
     try {
       setLoadingUsers(true);
 
-      const res = await UserService.loadUsers(page);
+      const res = await UserService.loadUsers(page, search);
 
       if (res.status === 200) {
         const usersData = res.data.users.data || res.data.users || [];
         const lastPage =
           res.data.users.last_page ||
           res.data.last_page ||
-          setUsersTableLastPage ||
+          usersTableLastPage ||
           1;
 
         setUsers(append ? [...users, ...usersData] : usersData);
@@ -73,7 +80,7 @@ const UserList: FC<UserListProps> = ({
       hasMore &&
       !loadingUsers
     ) {
-      handleLoadUsers(usersTableCurrentPage + 1, true);
+      handleLoadUsers(usersTableCurrentPage + 1, true, debouncedSearch);
     }
   }, [hasMore, loadingUsers, usersTableCurrentPage]);
 
@@ -114,8 +121,20 @@ const UserList: FC<UserListProps> = ({
   }, [handleScroll]);
 
   useEffect(() => {
-    handleLoadUsers(usersTableCurrentPage, false);
-  }, [refreshKey]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setUsers([]);
+    setUsersTableCurrentPage(1);
+    setHasMore(true);
+
+    handleLoadUsers(1, false, debouncedSearch);
+  }, [refreshKey, debouncedSearch]);
 
   return (
     <>
@@ -127,7 +146,17 @@ const UserList: FC<UserListProps> = ({
           <Table>
             <caption className="mb-4">
               <div className="border-b border-gray-100">
-                <div className="p-4 flex justify-end">
+                <div className="p-4 flex justify-between">
+                  <div className="w-64">
+                    <FloatingLabelInput
+                      label="Search"
+                      type="text"
+                      name="search"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
                   <button
                     type="button"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer"
@@ -217,6 +246,15 @@ const UserList: FC<UserListProps> = ({
                     </TableCell>
                   </TableRow>
                 ))
+              ) : !loadingUsers && (users.length ?? 0) <= 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="px-4 py-3 text-center font-medium"
+                  >
+                    No Records Found
+                  </TableCell>
+                </TableRow>
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="px-4 py-3 text-center">

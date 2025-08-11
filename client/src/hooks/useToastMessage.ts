@@ -2,11 +2,11 @@ import { useCallback, useState } from "react";
 
 export const useToastMessage = (
   initialMessage: string,
-  initialisFailed: boolean = false,
-  initialIsVisible: boolean
+  initialIsFailed: boolean = false,
+  initialIsVisible: boolean = false // ✅ default value added
 ) => {
   const [message, setMessage] = useState(initialMessage);
-  const [isFailed, setIsFailed] = useState(initialisFailed);
+  const [isFailed, setIsFailed] = useState(initialIsFailed);
   const [isVisible, setIsVisible] = useState(initialIsVisible);
 
   const showToastMessage = useCallback((msg: string, failed: boolean = false) => {
